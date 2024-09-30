@@ -125,7 +125,7 @@ def submit_models(driver, model_list_page, name):
         model_manager_page = pages[-1]
         
         model_name_input = model_manager_page.find_element(By.XPATH, ".//input[@id='name']")
-        model_name_input.send_keys(f"AU-{name}-{model_train_time}")
+        model_name_input.send_keys(f"{name}-{model_train_time}")
 
         submit_button = model_manager_page.find_element(By.XPATH, './div[2]/form/div/div[2]/div/div[1]/button')
         submit_button.click()
@@ -162,7 +162,7 @@ def eval_models_one_page(config, driver):
             continue
         
         model_name = model.find_element(By.XPATH, './td[1]/div/div[1]').text
-        model_name = f"{model_name.split('-')[1]}{model_name.split('-')[2]}"
+        model_name = f"{model_name.split('-')[0]}{model_name.split('-')[1]}"
         
         add_eval_button = model.find_element(By.XPATH, './td[12]/div/div/div[1]/button')
         add_eval_button.click()
