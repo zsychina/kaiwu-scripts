@@ -25,10 +25,10 @@ driver = kaiwu_login(config, driver)
 driver = select_bar(driver, "集群训练")
 
 # 3. 提交当前这一页的所有训练任务的模型
-driver, mission_list = upload_train_missions_one_page(driver)
+# driver, mission_list = upload_train_missions_one_page(driver)
 
 # 3. 或者仅提交第一个训练任务的模型
-# driver, mission_list = upload_last_train_mission(driver)
+driver, mission_list = upload_last_train_mission(driver)
 
 
 

@@ -28,8 +28,6 @@ driver = select_bar(driver, "模型管理")
 # 3. 当前这一页所有模型提交评估
 driver = eval_models_one_page(config, driver)
 
-
-
 time.sleep(100)
 driver.quit()
 

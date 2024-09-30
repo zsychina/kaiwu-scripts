@@ -155,16 +155,23 @@ def eval_models_one_page(config, driver):
     )
     model_list = models.find_elements(By.XPATH, "./tr[contains(@class, 'ant-table-row')]")
     for model in model_list:
+        # 只有检测成功才继续
+        succ_status = model.find_element(By.XPATH, './td[1]/div/div[2]/div/span/span').text
+        if succ_status != "检测成功":
+            continue
+        
+        model_name = model.find_element(By.XPATH, './td[1]/div/div[1]').text
+        model_name = f"{model_name.split('-')[1]}{model_name.split('-')[2]}"
+        
         add_eval_button = model.find_element(By.XPATH, './td[12]/div/div/div[1]/button')
         add_eval_button.click()
         time.sleep(1)
         
-        # /html/body/div[4]/div/div[3]/div/div
         add_eval_page = WebDriverWait(driver, 3).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'ant-drawer-wrapper-body'))
         )
         eval_mission_name_input = add_eval_page.find_element(By.XPATH, '//*[@id="name"]')
-        eval_mission_name_input.send_keys(f"autoeval-{str(time.time()).split('.')[0][-3:]}")
+        eval_mission_name_input.send_keys(f"{model_name}-{config['opponent_model']}")
         
         # 阵营A英雄选择
         camp_A_lineup_input = add_eval_page.find_element(By.XPATH, "./div[2]/form/div/div[1]/div[2]/div/div[2]/div/div/div/div[2]/div/div/div/div/div[4]/div/div[2]/div/div/span/div")
