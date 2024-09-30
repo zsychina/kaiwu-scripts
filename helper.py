@@ -59,7 +59,6 @@ def upload_train_missions_one_page(driver):
     mission_list = missions.find_elements(By.XPATH, './div')
     for mission in mission_list:
         name = mission.find_element(By.XPATH, './div[1]/div[1]/div[1]/div/div/div/span').text
-        print(name)
         
         model_list_button = mission.find_element(By.XPATH, './div[1]/div[2]/div/div/div[2]/button')
         model_list_button.click()
@@ -88,7 +87,6 @@ def upload_last_train_mission(driver):
     mission_list = missions.find_elements(By.XPATH, './div')
     mission = mission_list[0]
     name = mission.find_element(By.XPATH, './div[1]/div[1]/div[1]/div/div/div/span').text
-    print(name)
     
     model_list_button = mission.find_element(By.XPATH, './div[1]/div[2]/div/div/div[2]/button')
     model_list_button.click()
@@ -114,6 +112,9 @@ def submit_models(driver, model_list_page, name):
     models = model_list_page.find_element(By.CLASS_NAME, 'ant-table-tbody')
     model_list = models.find_elements(By.XPATH, ".//tr[contains(@class, 'ant-table-row')]")
     for model in model_list:
+        # 模型训练时间
+        model_train_time = model.find_element(By.XPATH, './td[1]/div/span').text
+        
         submit_to_model_manager_button = model.find_element(By.XPATH, "./td[4]/div/div/div[2]/button")
         submit_to_model_manager_button.click()
         time.sleep(2)
@@ -123,7 +124,7 @@ def submit_models(driver, model_list_page, name):
         model_manager_page = pages[-1]
         
         model_name_input = model_manager_page.find_element(By.XPATH, ".//input[@id='name']")
-        model_name_input.send_keys(f"{name}-autoupload-{str(time.time()).split('.')[0][-3:]}")
+        model_name_input.send_keys(f"AU-{name}-{model_train_time}")
 
         submit_button = model_manager_page.find_element(By.XPATH, './div[2]/form/div/div[2]/div/div[1]/button')
         submit_button.click()
