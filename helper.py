@@ -162,7 +162,7 @@ def eval_models_one_page(config, driver):
             continue
         
         model_name = model.find_element(By.XPATH, './td[1]/div/div[1]').text
-        model_name = f"{model_name.split('-')[0]}{model_name.split('-')[1]}"
+        # model_name = f"{model_name.split('-')[0]}{model_name.split('-')[1]}"
         
         add_eval_button = model.find_element(By.XPATH, './td[12]/div/div/div[1]/button')
         add_eval_button.click()
