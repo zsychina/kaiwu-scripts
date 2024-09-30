@@ -116,6 +116,10 @@ def submit_models(driver, model_list_page, name):
         model_train_time = model.find_element(By.XPATH, './td[1]/div/span').text
         model_train_time = model_train_time.split('min')[0] + 'm'
         
+        # 过滤小于2小时的模型
+        if 'h' not in model_train_time or int(model_train_time.split('h')[0]) <= 2:
+            continue
+        
         submit_to_model_manager_button = model.find_element(By.XPATH, "./td[4]/div/div/div[2]/button")
         submit_to_model_manager_button.click()
         time.sleep(2)
