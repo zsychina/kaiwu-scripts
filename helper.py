@@ -114,6 +114,7 @@ def submit_models(driver, model_list_page, name):
     for model in model_list:
         # 模型训练时间
         model_train_time = model.find_element(By.XPATH, './td[1]/div/span').text
+        model_train_time = model_train_time.split('min')[0] + 'm'
         
         submit_to_model_manager_button = model.find_element(By.XPATH, "./td[4]/div/div/div[2]/button")
         submit_to_model_manager_button.click()
@@ -157,7 +158,7 @@ def eval_models_one_page(config, driver):
     for model in model_list:
         # 只有检测成功才继续
         succ_status = model.find_element(By.XPATH, './td[1]/div/div[2]/div/span/span').text
-        if succ_status != "检测成功":
+        if succ_status.strip() != "检测成功":
             continue
         
         model_name = model.find_element(By.XPATH, './td[1]/div/div[1]').text
