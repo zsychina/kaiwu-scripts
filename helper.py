@@ -2,7 +2,7 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
+import re
 
 def kaiwu_login(config, driver):
     # 登陆界面
@@ -50,9 +50,7 @@ def select_bar(driver, bar_name="集群训练"):
 
 
 ###### uploader
-
-def upload_train_missions_one_page(driver):
-    model_name_list = []    # TODO: 上传模型的名字    
+def upload_train_missions_one_page(config, driver):
     missions = WebDriverWait(driver, 3).until(
         EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/section/div/div/div/div/div[2]/div[2]/div/div/div[2]/div/div'))
     )
@@ -70,17 +68,16 @@ def upload_train_missions_one_page(driver):
         )
 
         # 提交每一个模型
-        driver = submit_models(driver, model_list_page, name)
+        driver = submit_models(config, driver, model_list_page, name)
 
         quit_button = model_list_page.find_element(By.XPATH, './div[1]/div/button')
         quit_button.click()
         time.sleep(3)
 
-    return driver, model_name_list
+    return driver
 
 
-def upload_last_train_mission(driver):
-    model_name_list = []
+def upload_last_train_mission(config, driver):
     missions = WebDriverWait(driver, 3).until(
         EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/section/div/div/div/div/div[2]/div[2]/div/div/div[2]/div/div'))
     )
@@ -98,17 +95,17 @@ def upload_last_train_mission(driver):
     )
 
     # 提交每一个模型
-    driver = submit_models(driver, model_list_page, name)
+    driver = submit_models(config, driver, model_list_page, name)
 
     quit_button = model_list_page.find_element(By.XPATH, './div[1]/div/button')
     quit_button.click()
     time.sleep(3)
 
-    return driver, model_name_list
+    return driver
 
 
 
-def submit_models(driver, model_list_page, name):
+def submit_models(config, driver, model_list_page, name):
     models = model_list_page.find_element(By.CLASS_NAME, 'ant-table-tbody')
     model_list = models.find_elements(By.XPATH, ".//tr[contains(@class, 'ant-table-row')]")
     for model in model_list:
@@ -117,7 +114,7 @@ def submit_models(driver, model_list_page, name):
         model_train_time = model_train_time.split('min')[0] + 'm'
         
         # 过滤小于2小时的模型
-        if 'h' not in model_train_time or int(model_train_time.split('h')[0]) < 2:
+        if 'h' not in model_train_time or int(model_train_time.split('h')[0]) < int(config['upload_filter']):
             continue
         
         submit_to_model_manager_button = model.find_element(By.XPATH, "./td[4]/div/div/div[2]/button")
@@ -154,7 +151,7 @@ def submit_models(driver, model_list_page, name):
 
 
 ##### evaler
-def eval_models_one_page(config, driver):
+def eval_models_one_page(config, driver, filter_re=None):
     models = WebDriverWait(driver, 3).until(
         EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/section/div/div/div/div/div[2]/div[2]/div/div/div/div/div/div/div/div/div/div/div/div/table/tbody'))
     )
@@ -167,6 +164,10 @@ def eval_models_one_page(config, driver):
         
         model_name = model.find_element(By.XPATH, './td[1]/div/div[1]').text
         # model_name = f"{model_name.split('-')[0]}{model_name.split('-')[1]}"
+        
+        if filter_re is not None:
+            if not re.match(filter_re, model_name):
+                continue
         
         add_eval_button = model.find_element(By.XPATH, './td[12]/div/div/div[1]/button')
         add_eval_button.click()
@@ -229,6 +230,29 @@ def eval_models_one_page(config, driver):
         # time.sleep(2)
         
     return driver
+
+
+def eval_models_range(config, driver, name: str, maxh: int, minh: int, page=5):
+    # 查询一个模型在训练时间minh~maxh之间的所有存档点，提交评估
+    # name是‘-’之前的字符串
+    assert minh < maxh, '调整minh、maxh'
+
+    name_re = f'{name}'
+    range_re = "|".join([f'{i}' for i in range(minh, maxh + 1)])
+    filter_re = f"{name_re}-({range_re})h\d+"
+    
+    for current_page_no in range(1, page+1):
+        driver = eval_models_one_page(config, driver, filter_re=filter_re)
+        
+        # 翻页
+        next_page = WebDriverWait(driver, 3).until(
+            EC.presence_of_element_located((By.XPATH, '//li[contains(@title,"下一页")]'))
+        )
+        next_page.click()
+        time.sleep(1)
+ 
+        
+    return driver    
 
 
 def hero_selector(driver, selector_page):

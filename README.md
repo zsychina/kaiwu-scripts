@@ -16,6 +16,7 @@ Author: [siyuan](https://github.com/zsychina)
         },
         "driver_path": "",
         "opponent_model": "",
+        "upload_filter": "",
         "eval_turn": ""
     }
     ```
@@ -26,4 +27,4 @@ Author: [siyuan](https://github.com/zsychina)
 
 - ~~提交模型uploader.py~~
 - ~~评估模型evaler.py~~
-- 提交并评估模型upload_eval_last_train.py
+- ~~根据正则表达式选择模型添加评估~~

@@ -3,12 +3,13 @@ import os
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+
 from helper import (
     kaiwu_login,
     select_bar,
-    upload_train_missions_one_page,
-    upload_last_train_mission
+    eval_models_range
 )
+
 
 with open('config.json', 'r') as file:
     config = json.load(file)
@@ -21,15 +22,11 @@ driver = webdriver.Chrome(service=service)
 # 1. 登陆kaiwu
 driver = kaiwu_login(config, driver)
 
-# 2. 选择集群训练
-driver = select_bar(driver, "集群训练")
+# 2. 选择模型评估
+driver = select_bar(driver, "模型管理")
 
-# 3. 提交当前这一页的所有训练任务的模型
-# driver = upload_train_missions_one_page(config, driver)
-
-# 3. 或者仅提交第一个训练任务的模型
-driver = upload_last_train_mission(config, driver)
-
+# 3. 根据区间评估模型
+driver = eval_models_range(config, driver, name='qq', maxh=86, minh=76, page=50)
 
 
 
