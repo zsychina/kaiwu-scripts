@@ -152,83 +152,87 @@ def submit_models(config, driver, model_list_page, name):
 
 
 ##### evaler
+def eval_one_model(config, driver, model, filter_re=None):
+    con = False
+    # 只有检测成功才继续
+    succ_status = model.find_element(By.XPATH, './td[1]/div/div[2]/div/span/span').text
+    if succ_status.strip() != "检测成功":
+        return True
+    
+    model_name = model.find_element(By.XPATH, './td[1]/div/div[1]').text
+    # model_name = f"{model_name.split('-')[0]}{model_name.split('-')[1]}"
+    
+    if filter_re is not None:
+        if not re.match(filter_re, model_name):
+            return True
+    
+    add_eval_button = model.find_element(By.XPATH, './td[12]/div/div/div[1]/button')
+    add_eval_button.click()
+    time.sleep(1)
+    
+    add_eval_page = WebDriverWait(driver, 3).until(
+        EC.presence_of_element_located((By.CLASS_NAME, 'ant-drawer-wrapper-body'))
+    )
+    eval_mission_name_input = add_eval_page.find_element(By.XPATH, '//*[@id="name"]')
+    eval_mission_name_input.send_keys(f"{model_name}-{config['opponent_model']}")
+    
+    # 阵营A英雄选择
+    camp_A_lineup_input = add_eval_page.find_element(By.XPATH, "./div[2]/form/div/div[1]/div[2]/div/div[2]/div/div/div/div[2]/div/div/div/div/div[4]/div/div[2]/div/div/span/div")
+    camp_A_lineup_input.click()
+    time.sleep(1)
+    camp_A_lineup_selector_page = camp_A_lineup_input.find_element(By.XPATH, './div/div[2]/div/div/div/div[2]/div/div/div')
+    driver = hero_selector(driver, camp_A_lineup_selector_page)
+    camp_A_lineup_input.click()
+    time.sleep(1)
+    
+    
+    # 阵营B模型选择
+    camp_B_model_input = add_eval_page.find_element(By.XPATH, './div[2]/form/div/div[1]/div[3]/div/div[2]/div/div/div/div[1]/div/div/div/div/div/div[1]/div/span/div')
+    camp_B_model_input.click()
+    time.sleep(1)
+    model_B_model_selector_page = add_eval_page.find_element(By.XPATH, "./div[2]/form/div/div[1]/div[3]/div/div[2]/div/div/div/div[1]/div/div/div/div/div/div[2]/div/div[contains(@class, 'ant-select-dropdown')]")
+    driver = model_selector(driver, model_B_model_selector_page, config['opponent_model'])
+    
+    
+    # 阵营B英雄选择
+    camp_B_lineup_input = add_eval_page.find_element(By.XPATH, './div[2]/form/div/div[1]/div[3]/div/div[2]/div/div/div/div[2]/div/div/div/div/div[4]/div/div[2]/div/div/span/div')
+    camp_B_lineup_input.click()
+    time.sleep(1)
+    camp_B_lineup_selector_page = camp_B_lineup_input.find_element(By.XPATH, './div/div[2]/div/div/div/div[2]/div/div/div')
+    driver = hero_selector(driver, camp_B_lineup_selector_page)
+    camp_B_lineup_input.click()
+    time.sleep(1)
+    
+    # 对局数量
+    eval_turn_input = add_eval_page.find_element(By.XPATH, './div[2]/form/div/div[1]/div[5]/div/div[2]/div/div/div/div/div/div/div/p/div/div[2]/input')
+    eval_turn_input.send_keys(config['eval_turn'])
+    
+    # 提交
+    submit_button = add_eval_page.find_element(By.XPATH, './div[2]/form/div/div[2]/div/div[1]/button')
+    submit_button.click()
+    time.sleep(1)
+    
+    return con
+
+
+
 def eval_models_one_page(config, driver, filter_re=None):
     models = WebDriverWait(driver, 3).until(
         EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/section/div/div/div/div/div[2]/div[2]/div/div/div/div/div/div/div/div/div/div/div/div/table/tbody'))
     )
     model_list = models.find_elements(By.XPATH, "./tr[contains(@class, 'ant-table-row')]")
     for model in model_list:
-        # 只有检测成功才继续
-        succ_status = model.find_element(By.XPATH, './td[1]/div/div[2]/div/span/span').text
-        if succ_status.strip() != "检测成功":
+        
+        con = eval_one_model(config, driver, model, filter_re)
+        if con:
             continue
-        
-        model_name = model.find_element(By.XPATH, './td[1]/div/div[1]').text
-        # model_name = f"{model_name.split('-')[0]}{model_name.split('-')[1]}"
-        
-        if filter_re is not None:
-            if not re.match(filter_re, model_name):
-                continue
-        
-        add_eval_button = model.find_element(By.XPATH, './td[12]/div/div/div[1]/button')
-        add_eval_button.click()
-        time.sleep(1)
-        
-        add_eval_page = WebDriverWait(driver, 3).until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'ant-drawer-wrapper-body'))
-        )
-        eval_mission_name_input = add_eval_page.find_element(By.XPATH, '//*[@id="name"]')
-        eval_mission_name_input.send_keys(f"{model_name}-{config['opponent_model']}")
-        
-        # 阵营A英雄选择
-        camp_A_lineup_input = add_eval_page.find_element(By.XPATH, "./div[2]/form/div/div[1]/div[2]/div/div[2]/div/div/div/div[2]/div/div/div/div/div[4]/div/div[2]/div/div/span/div")
-        camp_A_lineup_input.click()
-        time.sleep(1)
-        camp_A_lineup_selector_page = camp_A_lineup_input.find_element(By.XPATH, './div/div[2]/div/div/div/div[2]/div/div/div')
-        driver = hero_selector(driver, camp_A_lineup_selector_page)
-        camp_A_lineup_input.click()
-        time.sleep(1)
-        
-        
-        # 阵营B模型选择
-        camp_B_model_input = add_eval_page.find_element(By.XPATH, './div[2]/form/div/div[1]/div[3]/div/div[2]/div/div/div/div[1]/div/div/div/div/div/div[1]/div/span/div')
-        camp_B_model_input.click()
-        time.sleep(1)
-        model_B_model_selector_page = add_eval_page.find_element(By.XPATH, "./div[2]/form/div/div[1]/div[3]/div/div[2]/div/div/div/div[1]/div/div/div/div/div/div[2]/div/div[contains(@class, 'ant-select-dropdown')]")
-        driver = model_selector(driver, model_B_model_selector_page, config['opponent_model'])
-        
-      
-        # 阵营B英雄选择
-        camp_B_lineup_input = add_eval_page.find_element(By.XPATH, './div[2]/form/div/div[1]/div[3]/div/div[2]/div/div/div/div[2]/div/div/div/div/div[4]/div/div[2]/div/div/span/div')
-        camp_B_lineup_input.click()
-        time.sleep(1)
-        camp_B_lineup_selector_page = camp_B_lineup_input.find_element(By.XPATH, './div/div[2]/div/div/div/div[2]/div/div/div')
-        driver = hero_selector(driver, camp_B_lineup_selector_page)
-        camp_B_lineup_input.click()
-        time.sleep(1)
-        
-        # 对局数量
-        eval_turn_input = add_eval_page.find_element(By.XPATH, './div[2]/form/div/div[1]/div[5]/div/div[2]/div/div/div/div/div/div/div/p/div/div[2]/input')
-        eval_turn_input.send_keys(config['eval_turn'])
-        
-        # 提交
-        submit_button = add_eval_page.find_element(By.XPATH, './div[2]/form/div/div[2]/div/div[1]/button')
-        submit_button.click()
-        time.sleep(1)
         
         notice = WebDriverWait(driver, 3).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'ant-message-notice-content'))
         )
-        
         keep_this_page = notice.find_element(By.XPATH, ".//button")
         keep_this_page.click()
         time.sleep(2)
-        
-        # 无需手动退出        
-        # /html/body/div[4]/div/div[3]/div/div/div[1]/div/button
-        # quit_button = add_eval_page.find_element(By.XPATH, './div[1]/div/button')
-        # quit_button.click()
-        # time.sleep(2)
         
     return driver
 
@@ -251,7 +255,6 @@ def eval_models_range(config, driver, name: str, maxh: int, minh: int, page=5):
         )
         next_page.click()
         time.sleep(1)
- 
         
     return driver    
 
