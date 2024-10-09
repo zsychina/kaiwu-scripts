@@ -221,19 +221,30 @@ def eval_models_one_page(config, driver, filter_re=None):
         EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/section/div/div/div/div/div[2]/div[2]/div/div/div/div/div/div/div/div/div/div/div/div/table/tbody'))
     )
     model_list = models.find_elements(By.XPATH, "./tr[contains(@class, 'ant-table-row')]")
+    
+    max_retries = 5
     for model in model_list:
-        
-        con = eval_one_model(config, driver, model, filter_re)
-        if con:
-            continue
-        
-        notice = WebDriverWait(driver, 3).until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'ant-message-notice-content'))
-        )
-        keep_this_page = notice.find_element(By.XPATH, ".//button")
-        keep_this_page.click()
-        time.sleep(2)
-        
+        retries = 0
+        while retries < max_retries:
+            try:
+                con = eval_one_model(config, driver, model, filter_re)
+                if con:
+                    break
+                notice = WebDriverWait(driver, 3).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, 'ant-message-notice-content'))
+                )
+                keep_this_page = notice.find_element(By.XPATH, ".//button")
+                keep_this_page.click()
+                time.sleep(2)
+                break
+            except:
+                retries += 1
+                wait_sec = 500
+                print(f'wait for {wait_sec}s... Retry attempt {retries}')
+                time.sleep(wait_sec)
+        if retries == max_retries:
+            print("Max retries reached. Moving on.")
+            
     return driver
 
 
