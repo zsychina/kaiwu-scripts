@@ -111,7 +111,8 @@ def submit_models(config, driver, model_list_page, name):
     for model in model_list:
         # 模型训练时间
         model_train_time = model.find_element(By.XPATH, './td[1]/div/span').text
-        model_train_time = model_train_time.split('min')[0] + 'm'
+        if 'min' in model_train_time:
+            model_train_time = model_train_time.split('min')[0] + 'm'
         
         # 过滤小于2小时的模型
         if 'h' not in model_train_time or int(model_train_time.split('h')[0]) < int(config['upload_filter']):
