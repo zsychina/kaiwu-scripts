@@ -23,7 +23,8 @@ def kaiwu_login(config, driver):
     checkbox_button.click()
     
     login_button = WebDriverWait(driver, 3).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="basic"]/div[5]/div/div/div/div/span/button'))
+        EC.presence_of_element_located((By.XPATH, '//*[@id="basic"]/div[5]/div/div/div/div/button'))
+        # EC.presence_of_element_located((By.XPATH, "//*[contains(text(), '登  录')]"))
     )
     login_button.click()
     
