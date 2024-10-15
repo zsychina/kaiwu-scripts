@@ -219,7 +219,7 @@ def eval_one_model(config, driver, model, filter_re=None):
 
 def eval_models_one_page(config, driver, filter_re=None):
     models = WebDriverWait(driver, 3).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/section/div/div/div/div/div[2]/div[2]/div/div/div/div/div/div/div/div/div/div/div/div/table/tbody'))
+        EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/section/div/div/div/div/div[2]/div[2]/div/div/div/div/div/div/div/div/div/div/table/tbody'))
     )
     model_list = models.find_elements(By.XPATH, "./tr[contains(@class, 'ant-table-row')]")
     
